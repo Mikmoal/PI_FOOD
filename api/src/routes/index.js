@@ -9,4 +9,4 @@ mainRouter.use("/recipes", recipesRouter);
 mainRouter.use("/diets", dietsRouter);
 
 
-module.exports = mainRouter;
+module.exports = {mainRouter}

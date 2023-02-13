@@ -12,7 +12,7 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    resume: {
+    resumen: {
       type: DataTypes.STRING,
       allowNull: false,
     },
@@ -23,6 +23,14 @@ module.exports = (sequelize) => {
     paso_a_paso: {
       type: DataTypes.STRING,
       allowNull: false,
-    }
+    },
+    createdInDb: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true
+      }
+  }, {
+    timestamps: false,
+    freezeTableName: true,
   });
 };

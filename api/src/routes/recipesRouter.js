@@ -1,12 +1,14 @@
 const { Router } = require('express');
-const {getRecipeByName,getRecipeById,createRecipe} = require("../handlers/recipeHandlers");
+const {getRecipeByName, getRecipeByID, createRecipeHandler} = require("../handlers/recipeHandlers");
+const { validate } = require("../middlewares/validations");
 
 const recipesRouter = Router();
 
+
 recipesRouter.get("/", getRecipeByName);
-recipesRouter.get("/:id", getRecipeById);
-recipesRouter.post("/", createRecipe);
+recipesRouter.get("/:id", getRecipeByID);
+recipesRouter.post("/",validate, createRecipeHandler);
 
 
 
-module.export = recipesRouter;
+module.exports = {recipesRouter};
