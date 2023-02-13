@@ -30,22 +30,25 @@ const getAllRecipes = async () => {
 };
 
 const searchRecipeByName = async (name) => {
-  const dbRecipes = Recipe.findAll({
-    where: { name },
-  });
-  const apiRecipesRaw = await axios.get(
-    `https://api.spoonacular.com/recipes/complexSearch?api_key=${API_KEY}`
-  ).data;
+  // const dbRecipes = await Recipe.findAll({
+  //   where: { nombre: name },
+  // });
 
+  const apiRecipesRaw = (await axios.get(
+    `https://api.spoonacular.com/recipes/complexSearch?apiKey=${API_KEY}&addRecipeInformation=true&query=${name}&number=100`
+  )).data.results;
+  
   const apiRecipes = cleanArray(apiRecipesRaw);
 
+  //let expresion = new RegExp(`${name}.*`, "i");
+
   const filteredApi = apiRecipes.filter((recipe) => {
-    recipe.nombre.toLowerCase().includes(name.toLowerCase());
+    //expresion.test(recipe.title);
+    recipe.nombre.toLowerCase().includes(name);
   });
 
-  if (dbRecipes.length > 0 || filteredApi.length > 0)
-    return [...dbRecipes, ...filteredApi];
-  else return res.status(404).send({ msg: "Recipe name not found" });
+  
+  return [...filteredApi];
 };
 
 const searchRecipeById = async (id, source) => {
@@ -62,7 +65,7 @@ const searchRecipeById = async (id, source) => {
         })
       : (
           await axios.get(
-            `https://api.spoonacular.com/recipes/${id}/information&addRecipeInformation=true?api_key=${API_KEY}`
+            `https://api.spoonacular.com/recipes/${id}/information?apiKey=${API_KEY}&addRecipeInformation=true`
           )
         ).data;
   return recipe;
@@ -81,7 +84,7 @@ const createRecipe = async (
     resumen,
     health_score,
     paso_a_paso,
-    imagen
+    imagen,
   });
 };
 
@@ -89,5 +92,5 @@ module.exports = {
   getAllRecipes,
   searchRecipeByName,
   searchRecipeById,
-  createRecipe
+  createRecipe,
 };
