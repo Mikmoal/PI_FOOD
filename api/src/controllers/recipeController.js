@@ -1,16 +1,27 @@
 require("dotenv").config();
+const Sequelize = require("sequelize");
 const axios = require("axios");
 const { Recipe, Diet } = require("../db");
 const { API_KEY } = process.env;
+const { Op } = Sequelize;
 
 const cleanArray = (arr) =>
   arr.map((el) => {
+    let stepsFormated = []; //1
+    el.analyzedInstructions.forEach((item) => {
+      item.steps.forEach((step) => {
+        let stp = {};
+        stp[step.number] = step.step;
+        stepsFormated.push(stp);
+      });
+    });
+
     return {
       id: el.id, //int
       nombre: el.title, //string
       resumen: el.summary, //string
       health_score: el.healthScore, //double
-      paso_a_paso: el.analyzedInstructions[0].steps, //arr
+      paso_a_paso: stepsFormated, //arr
       imagen: el.image, //string
       dietas: el.diets, //arr
     };
@@ -30,25 +41,30 @@ const getAllRecipes = async () => {
 };
 
 const searchRecipeByName = async (name) => {
-  // const dbRecipes = await Recipe.findAll({
-  //   where: { nombre: name },
-  // });
-
-  const apiRecipesRaw = (await axios.get(
-    `https://api.spoonacular.com/recipes/complexSearch?apiKey=${API_KEY}&addRecipeInformation=true&query=${name}&number=100`
-  )).data.results;
-  
-  const apiRecipes = cleanArray(apiRecipesRaw);
-
-  //let expresion = new RegExp(`${name}.*`, "i");
-
-  const filteredApi = apiRecipes.filter((recipe) => {
-    //expresion.test(recipe.title);
-    recipe.nombre.toLowerCase().includes(name);
+  const dbRecipes = await Recipe.findAll({
+    where: { nombre: { [Op.like]: `%${name}%` } },
+    include: [
+      { model: Diet, attributes: ["nombre"], through: { attributes: [] } },
+    ],
   });
 
-  
-  return [...filteredApi];
+  const apiRecipesRaw = (
+    await axios.get(
+      `https://api.spoonacular.com/recipes/complexSearch?apiKey=${API_KEY}&query=${name}&addRecipeInformation=true&number=100`
+    )
+  ).data.results;
+
+  const apiRecipes = cleanArray(apiRecipesRaw);
+  return [...dbRecipes, ...apiRecipes];
+  // console.log(apiRecipes);
+  // //let expresion = new RegExp(`${name}.*`, "i");
+
+  // const filteredApi = apiRecipes.filter((recipe) => {
+  //   //expresion.test(recipe.title);
+  //   recipe.nombre.toLowerCase().includes(name);
+  // });
+
+  // return [...filteredApi];
 };
 
 const searchRecipeById = async (id, source) => {
