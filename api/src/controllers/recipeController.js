@@ -50,21 +50,13 @@ const searchRecipeByName = async (name) => {
 
   const apiRecipesRaw = (
     await axios.get(
-      `https://api.spoonacular.com/recipes/complexSearch?apiKey=${API_KEY}&query=${name}&addRecipeInformation=true&number=100`
+      `https://api.spoonacular.com/recipes/complexSearch?apiKey=${API_KEY}&number=100`
     )
   ).data.results;
 
-  const apiRecipes = cleanArray(apiRecipesRaw);
+  const apiRecipes = apiRecipesRaw.filter(recipe => recipe.title.toLowerCase().includes(name.toLowerCase()));
+
   return [...dbRecipes, ...apiRecipes];
-  // console.log(apiRecipes);
-  // //let expresion = new RegExp(`${name}.*`, "i");
-
-  // const filteredApi = apiRecipes.filter((recipe) => {
-  //   //expresion.test(recipe.title);
-  //   recipe.nombre.toLowerCase().includes(name);
-  // });
-
-  // return [...filteredApi];
 };
 
 const searchRecipeById = async (id, source) => {
@@ -95,14 +87,15 @@ const createRecipe = async (
   imagen,
   dietas
 ) => {
-  await Recipe.create({
+  const recipeCreated = await Recipe.create({
     nombre,
     resumen,
     health_score,
     paso_a_paso,
     imagen,
   });
-};
+  await recipeCreated.addDiet(dietas);
+}
 
 module.exports = {
   getAllRecipes,

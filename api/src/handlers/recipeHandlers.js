@@ -48,7 +48,7 @@ const createRecipeHandler = async (req, res) => {
       imagen,
       dietas
     );
-    res.status(201).json(newRecipe);
+    res.status(201).send({"msg":"Recipe created"});
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
