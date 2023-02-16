@@ -1,9 +1,9 @@
 require("dotenv").config();
 const axios = require("axios");
-const { Recipe, Diet } = require("../db");
+const { Diet } = require("../db");
 const { API_KEY } = process.env;
 
-const getDiets = async (req,res) => {
+const getDiets = async (req, res) => {
   try {
     const apiDiets = (
       await axios.get(
@@ -20,6 +20,16 @@ const getDiets = async (req,res) => {
     });
 
     const filteredArr = new Set(allDietsArr);
+
+    filteredArr.forEach(async (el) => {
+      await Diet.findOrCreate({
+        where: { nombre: el },
+        defaults: {
+          nombre: el
+        }
+      });
+    });
+
     res.status(200).json([...filteredArr]);
   } catch (error) {
     res.status(400).json({ error: error.message });
